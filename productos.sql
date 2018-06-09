@@ -9,8 +9,6 @@
 -- Author: Rafael San José (rafael.sanjose@x-netdigital.com)
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
 SET time_zone = "+00:00";
 
 
@@ -122,7 +120,6 @@ CREATE TABLE `products` (
   `family_id` int(10) UNSIGNED NOT NULL,
   `brand_id` int(10) UNSIGNED NOT NULL,
   `unit_id` int(10) UNSIGNED NOT NULL,
-  `tax_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(60) NOT NULL,
   `description` tinytext NOT NULL,
   `metatitle` varchar(160) NOT NULL,
@@ -134,10 +131,22 @@ CREATE TABLE `products` (
 -- Volcado de datos para la tabla `products`
 --
 
-INSERT INTO `products` (`id`, `family_id`, `brand_id`, `unit_id`, `tax_id`, `name`, `description`, `metatitle`, `metadescription`, `url`) VALUES
-(1, 2010, 1, 1, 1, 'Pantalón vaquero Buckle para hombre', '<p>Descripción internet</p>', 'Metatítulo', 'Metadescripción', 'pantalon-vaquero-buckle'),
-(2, 2010, 1, 1, 1, 'Pantalón vaquero Levis', '<p>Descripción internet</p>', 'Metatítulo', 'Metadescripción', 'pantalon-vaquero-levis'),
-(3, 3010, 2, 1, 1, 'Sombrero de mujer Zara', '<p>Descripción internet</p>', 'Metatítulo', 'Metadescripción', 'sombrero-mujer');
+INSERT INTO `products` (`id`, `family_id`, `brand_id`, `unit_id`, `name`, `description`, `metatitle`, `metadescription`, `url`) VALUES
+(1, 2010, 1, 1, 'Pantalón vaquero Buckle para hombre', '<p>Descripción internet</p>', 'Metatítulo', 'Metadescripción', 'pantalon-vaquero-buckle'),
+(2, 2010, 1, 1, 'Pantalón vaquero Levis', '<p>Descripción internet</p>', 'Metatítulo', 'Metadescripción', 'pantalon-vaquero-levis'),
+(3, 3010, 2, 1, 'Sombrero de mujer Zara', '<p>Descripción internet</p>', 'Metatítulo', 'Metadescripción', 'sombrero-mujer');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `products_eans`
+--
+
+CREATE TABLE `products_eans` (
+  `ean` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
+  `variant_id` int(10) UNSIGNED NOT NULL,
+  `qty` int(10) UNSIGNED NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -157,6 +166,52 @@ CREATE TABLE `suppliers` (
 INSERT INTO `suppliers` (`id`, `name`) VALUES
 (1, 'The Buckle, Inc'),
 (2, 'Inditex, S.A.');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `supplier_prices`
+--
+
+CREATE TABLE `supplier_prices` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `supplier_id` int(10) UNSIGNED NOT NULL,
+  `variant_id` int(10) UNSIGNED NOT NULL,
+  `date_from` date NOT NULL,
+  `date_to` date NOT NULL,
+  `cost` decimal(19,4) DEFAULT '0.0000',
+  `rrp` decimal(19,4) DEFAULT '0.0000'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `supplier_products`
+--
+
+CREATE TABLE `supplier_products` (
+  `id` int(10) NOT NULL,
+  `supplier_id` int(10) NOT NULL,
+  `variant_id` int(10) NOT NULL,
+  `supplier_ref` varchar(50) NOT NULL,
+  `sku` int(10) UNSIGNED DEFAULT NULL,
+  `nombre` varchar(100) DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `supplier_rates`
+--
+
+CREATE TABLE `supplier_rates` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `variant_id` int(10) UNSIGNED NOT NULL,
+  `date_from` date NOT NULL,
+  `date_to` date NOT NULL,
+  `cost` decimal(19,4) NOT NULL,
+  `net_cost` decimal(19,4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -218,7 +273,6 @@ CREATE TABLE `variants` (
   `precio_minimo` float NOT NULL,
   `pvd` float NOT NULL,
   `pvpr` float NOT NULL,
-  `imagen` varchar(160) NOT NULL,
   `active` tinyint(10) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -226,12 +280,12 @@ CREATE TABLE `variants` (
 -- Volcado de datos para la tabla `variants`
 --
 
-INSERT INTO `variants` (`id`, `product_id`, `name`, `format_qty`, `referencia`, `costo`, `precio_minimo`, `pvd`, `pvpr`, `imagen`, `active`) VALUES
-(1, 1, 'Pantalón vaquero Buckle azul para hombre talla XL', 1, '0', 10, 20, 0, 0, '', 1),
-(2, 1, 'Pantalón vaquero Buckle azul para hombre talla XXL', 1, '0', 10, 20, 0, 0, '', 1),
-(3, 1, 'Pantalón vaquero Buckle negro para hombre talla XL', 1, '0', 10, 20, 0, 0, '', 1),
-(4, 1, 'Pantalón vaquero Buckle negro para hombre talla XXL', 1, '0', 10, 20, 0, 0, '', 1),
-(5, 3, 'Sombrero Zara Rojo', 1, '0', 15, 30, 0, 0, '', 1);
+INSERT INTO `variants` (`id`, `product_id`, `name`, `format_qty`, `referencia`, `costo`, `precio_minimo`, `pvd`, `pvpr`, `active`) VALUES
+(1, 1, 'Pantalón vaquero Buckle azul para hombre talla XL', 1, '0', 10, 20, 0, 0, 1),
+(2, 1, 'Pantalón vaquero Buckle azul para hombre talla XXL', 1, '0', 10, 20, 0, 0, 1),
+(3, 1, 'Pantalón vaquero Buckle negro para hombre talla XL', 1, '0', 10, 20, 0, 0, 1),
+(4, 1, 'Pantalón vaquero Buckle negro para hombre talla XXL', 1, '0', 10, 20, 0, 0, 1),
+(5, 3, 'Sombrero Zara Rojo', 1, '0', 15, 30, 0, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -259,6 +313,20 @@ INSERT INTO `variant_attributes` (`id`, `variant_id`, `attribute_value_id`) VALU
 (7, 4, 3),
 (8, 4, 2),
 (9, 5, 5);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `variant_images`
+--
+
+CREATE TABLE `variant_images` (
+  `id` int(10) NOT NULL,
+  `variant_id` int(10) NOT NULL,
+  `imageorder` tinyint(2) NOT NULL,
+  `image` varchar(250) NOT NULL,
+  `alternativetext` varchar(250) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Índices para tablas volcadas
@@ -298,7 +366,6 @@ ALTER TABLE `products`
   ADD UNIQUE KEY `url` (`url`),
   ADD KEY `brand_id` (`brand_id`),
   ADD KEY `unit_id` (`unit_id`),
-  ADD KEY `tax_id` (`tax_id`),
   ADD KEY `family_id` (`family_id`);
 
 --
@@ -333,6 +400,13 @@ ALTER TABLE `variant_attributes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `variant_id` (`variant_id`),
   ADD KEY `attribute_value_id` (`attribute_value_id`);
+
+--
+-- Indices de la tabla `variant_images`
+--
+ALTER TABLE `variant_images`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `variant_id` (`variant_id`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -404,8 +478,7 @@ ALTER TABLE `attribute_values`
 ALTER TABLE `products`
   ADD CONSTRAINT `products_ibfk_1` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `products_ibfk_2` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `products_ibfk_3` FOREIGN KEY (`tax_id`) REFERENCES `taxes` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `products_ibfk_4` FOREIGN KEY (`family_id`) REFERENCES `families` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `products_ibfk_3` FOREIGN KEY (`family_id`) REFERENCES `families` (`id`) ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `variants`
@@ -419,7 +492,6 @@ ALTER TABLE `variants`
 ALTER TABLE `variant_attributes`
   ADD CONSTRAINT `variant_attributes_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`),
   ADD CONSTRAINT `variant_attributes_ibfk_2` FOREIGN KEY (`attribute_value_id`) REFERENCES `attribute_values` (`id`) ON UPDATE CASCADE;
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
