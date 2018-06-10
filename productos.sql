@@ -143,9 +143,49 @@ INSERT INTO `products` (`id`, `family_id`, `brand_id`, `unit_id`, `name`, `descr
 --
 
 CREATE TABLE `products_eans` (
-  `ean` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
+  `ean` varchar(20) NOT NULL DEFAULT '',
   `variant_id` int(10) UNSIGNED NOT NULL,
   `qty` int(10) UNSIGNED NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `stock`
+--
+
+CREATE TABLE `stock` (
+  `variant_id` int(10) UNSIGNED NOT NULL,
+  `expiration` date NOT NULL DEFAULT '0000-00-00',
+  `entry` date NOT NULL DEFAULT '0000-00-00',
+  `store_id` int(10) UNSIGNED NOT NULL,
+  `gap` varchar(10) NOT NULL DEFAULT 'BEACH',
+  `name` varchar(100) DEFAULT NULL,
+  `qty` int(11) DEFAULT '0',
+  `cost` decimal(19,4) DEFAULT '0.0000',
+  `lot` varchar(10) DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `store`
+--
+
+CREATE TABLE `store` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `name` varchar(60) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `store_gaps`
+--
+
+CREATE TABLE `store_gaps` (
+  `store_id` int(10) UNSIGNED NOT NULL,
+  `gap` varchar(10) NOT NULL DEFAULT 'BEACH'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -170,31 +210,14 @@ INSERT INTO `suppliers` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `supplier_prices`
---
-
-CREATE TABLE `supplier_prices` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `supplier_id` int(10) UNSIGNED NOT NULL,
-  `variant_id` int(10) UNSIGNED NOT NULL,
-  `date_from` date NOT NULL,
-  `date_to` date NOT NULL,
-  `cost` decimal(19,4) DEFAULT '0.0000',
-  `rrp` decimal(19,4) DEFAULT '0.0000'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `supplier_products`
 --
 
 CREATE TABLE `supplier_products` (
-  `id` int(10) NOT NULL,
-  `supplier_id` int(10) NOT NULL,
-  `variant_id` int(10) NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL,
+  `supplier_id` int(10) UNSIGNED NOT NULL,
+  `variant_id` int(10) UNSIGNED NOT NULL,
   `supplier_ref` varchar(50) NOT NULL,
-  `sku` int(10) UNSIGNED DEFAULT NULL,
   `nombre` varchar(100) DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -205,12 +228,13 @@ CREATE TABLE `supplier_products` (
 --
 
 CREATE TABLE `supplier_rates` (
-  `id` int(10) UNSIGNED NOT NULL,
+  `supplier_id` int(10) UNSIGNED NOT NULL,
   `variant_id` int(10) UNSIGNED NOT NULL,
   `date_from` date NOT NULL,
   `date_to` date NOT NULL,
   `cost` decimal(19,4) NOT NULL,
-  `net_cost` decimal(19,4) NOT NULL
+  `net_cost` decimal(19,4) NOT NULL,
+  `rrp` decimal(19,4) NOT NULL COMMENT 'Recommended Retail Price'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -321,8 +345,8 @@ INSERT INTO `variant_attributes` (`id`, `variant_id`, `attribute_value_id`) VALU
 --
 
 CREATE TABLE `variant_images` (
-  `id` int(10) NOT NULL,
-  `variant_id` int(10) NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL,
+  `variant_id` int(10) UNSIGNED NOT NULL,
   `imageorder` tinyint(2) NOT NULL,
   `image` varchar(250) NOT NULL,
   `alternativetext` varchar(250) NOT NULL
@@ -369,10 +393,51 @@ ALTER TABLE `products`
   ADD KEY `family_id` (`family_id`);
 
 --
+-- Indices de la tabla `products_eans`
+--
+ALTER TABLE `products_eans`
+  ADD KEY `variant_id` (`variant_id`);
+
+--
+-- Indices de la tabla `stock`
+--
+ALTER TABLE `stock`
+  ADD PRIMARY KEY (`variant_id`,`expiration`,`entry`,`store_id`,`gap`),
+  ADD KEY `store_id` (`store_id`,`gap`);
+
+--
+-- Indices de la tabla `store`
+--
+ALTER TABLE `store`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `store_gaps`
+--
+ALTER TABLE `store_gaps`
+  ADD PRIMARY KEY (`store_id`,`gap`);
+
+--
 -- Indices de la tabla `suppliers`
 --
 ALTER TABLE `suppliers`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `supplier_products`
+--
+ALTER TABLE `supplier_products`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `supplier_id` (`supplier_id`,`variant_id`),
+  ADD KEY `supplier_id_2` (`supplier_id`);
+
+--
+-- Indices de la tabla `supplier_rates`
+--
+ALTER TABLE `supplier_rates`
+  ADD PRIMARY KEY (`supplier_id`,`variant_id`,`date_from`),
+  ADD KEY `supplier_id` (`supplier_id`,`variant_id`),
+  ADD KEY `variant_id` (`variant_id`);
 
 --
 -- Indices de la tabla `taxes`
@@ -426,22 +491,22 @@ ALTER TABLE `attribute_values`
 -- AUTO_INCREMENT de la tabla `brands`
 --
 ALTER TABLE `brands`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1013;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- AUTO_INCREMENT de la tabla `families`
 --
 ALTER TABLE `families`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2092001;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3011;
 --
 -- AUTO_INCREMENT de la tabla `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5000005;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 --
 -- AUTO_INCREMENT de la tabla `suppliers`
 --
 ALTER TABLE `suppliers`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- AUTO_INCREMENT de la tabla `taxes`
 --
@@ -451,12 +516,12 @@ ALTER TABLE `taxes`
 -- AUTO_INCREMENT de la tabla `units`
 --
 ALTER TABLE `units`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT de la tabla `variants`
 --
 ALTER TABLE `variants`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16636;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 --
 -- AUTO_INCREMENT de la tabla `variant_attributes`
 --
@@ -481,6 +546,38 @@ ALTER TABLE `products`
   ADD CONSTRAINT `products_ibfk_3` FOREIGN KEY (`family_id`) REFERENCES `families` (`id`) ON UPDATE CASCADE;
 
 --
+-- Filtros para la tabla `products_eans`
+--
+ALTER TABLE `products_eans`
+  ADD CONSTRAINT `products_eans_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `stock`
+--
+ALTER TABLE `stock`
+  ADD CONSTRAINT `stock_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `xxx` FOREIGN KEY (`store_id`,`gap`) REFERENCES `store_gaps` (`store_id`, `gap`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `store_gaps`
+--
+ALTER TABLE `store_gaps`
+  ADD CONSTRAINT `store_gaps_ibfk_1` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `supplier_products`
+--
+ALTER TABLE `supplier_products`
+  ADD CONSTRAINT `supplier_products_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `supplier_rates`
+--
+ALTER TABLE `supplier_rates`
+  ADD CONSTRAINT `supplier_rates_ibfk_1` FOREIGN KEY (`supplier_id`,`variant_id`) REFERENCES `supplier_products` (`supplier_id`, `variant_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `supplier_rates_ibfk_2` FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`) ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `variants`
 --
 ALTER TABLE `variants`
@@ -492,6 +589,12 @@ ALTER TABLE `variants`
 ALTER TABLE `variant_attributes`
   ADD CONSTRAINT `variant_attributes_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`),
   ADD CONSTRAINT `variant_attributes_ibfk_2` FOREIGN KEY (`attribute_value_id`) REFERENCES `attribute_values` (`id`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `variant_images`
+--
+ALTER TABLE `variant_images`
+  ADD CONSTRAINT `variant_images_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `variants` (`id`) ON UPDATE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
